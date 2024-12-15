@@ -24,7 +24,7 @@ partial class Form1
     private System.Windows.Forms.Label subjectLabel;
     private System.Windows.Forms.TextBox subjectTextBox;
     private System.Windows.Forms.TextBox displayTextBox;
-
+        
     /// <summary>
     ///  Clean up any resources being used.
     /// </summary>

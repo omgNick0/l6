@@ -1,5 +1,8 @@
 using System;
 
+
+// esketit. just testing over here...
+
 namespace PublicationManager
 {
     public abstract class AbstractPublication
