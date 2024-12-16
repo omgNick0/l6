@@ -2,7 +2,24 @@ using System;
 
 namespace ShipsApp
 {
-    public abstract class ShipBase
+    public interface IVessel
+    {
+        double GetLength();
+        string GetVesselInfo();
+        void DisplayInfo();
+    }
+
+    public interface ISailable : IVessel
+    {
+        int GetSailsCount();
+    }
+
+    public interface IPowered : IVessel
+    {
+        int GetEnginePower();
+    }
+
+    public abstract class ShipBase : IVessel
     {
         protected double Length { get; set; }
 
@@ -15,12 +32,13 @@ namespace ShipsApp
         
         public abstract void DisplayInfo();
         public abstract void Modify();
+        public virtual string GetVesselInfo() => $"Длина: {Length} метров";
     }
 
     public class Ship : ShipBase
     {
-        protected string Name { get; set; }
-        protected int Crew { get; set; }
+        public string Name { get; set; }
+        public int Crew { get; set; }
 
         public Ship(string name, double length, int crew) : base(length)
         {
@@ -37,16 +55,16 @@ namespace ShipsApp
 
         public override void Modify()
         {
-            // Будет реализовано через форму
+            // Реализовано через форму EditShipForm
         }
 
-        public virtual string GetShipInfo()
+        public override string GetVesselInfo()
         {
             return $"Название: {Name}\nДлина: {Length} метров\nЭкипаж: {Crew} человек";
         }
     }
 
-    public class Steamship : Ship
+    public class Steamship : Ship, IPowered
     {
         public int EnginePower { get; set; }
 
@@ -56,13 +74,15 @@ namespace ShipsApp
             EnginePower = enginePower;
         }
 
-        public override string GetShipInfo()
+        public int GetEnginePower() => EnginePower;
+
+        public override string GetVesselInfo()
         {
-            return base.GetShipInfo() + $"\nМощность двигателя: {EnginePower} л.с.";
+            return base.GetVesselInfo() + $"\nМощность двигателя: {EnginePower} л.с.";
         }
     }
 
-    public class SailingShip : Ship
+    public class SailingShip : Ship, ISailable
     {
         public int Sails { get; set; }
 
@@ -72,13 +92,15 @@ namespace ShipsApp
             Sails = sails;
         }
 
-        public override string GetShipInfo()
+        public int GetSailsCount() => Sails;
+
+        public override string GetVesselInfo()
         {
-            return base.GetShipInfo() + $"\nКоличество парусов: {Sails}";
+            return base.GetVesselInfo() + $"\nКоличество парусов: {Sails}";
         }
     }
 
-    public class Yacht : Ship
+    public class Yacht : Ship, ISailable, IPowered
     {
         public int Sails { get; set; }
         public int EnginePower { get; set; }
@@ -92,9 +114,12 @@ namespace ShipsApp
             LuxuryLevel = luxuryLevel;
         }
 
-        public override string GetShipInfo()
+        public int GetSailsCount() => Sails;
+        public int GetEnginePower() => EnginePower;
+
+        public override string GetVesselInfo()
         {
-            return base.GetShipInfo() + 
+            return base.GetVesselInfo() + 
                    $"\nКоличество парусов: {Sails}" +
                    $"\nМощность двигателя: {EnginePower} л.с." +
                    $"\nУровень роскоши: {LuxuryLevel}";

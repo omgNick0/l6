@@ -9,6 +9,7 @@ namespace ShipsApp
         private List<ShipBase> ships;
         private ListBox shipsListBox;
         private TextBox detailsTextBox;
+        private Button editButton;
 
         public ShowShipsForm(List<ShipBase> ships)
         {
@@ -43,7 +44,16 @@ namespace ShipsApp
                 ScrollBars = ScrollBars.Vertical
             };
 
-            this.Controls.AddRange(new Control[] { shipsListBox, detailsTextBox });
+            editButton = new Button
+            {
+                Text = "Редактировать",
+                Location = new System.Drawing.Point(20, 330),
+                Width = 120,
+                Enabled = false
+            };
+            editButton.Click += EditButton_Click;
+
+            this.Controls.AddRange(new Control[] { shipsListBox, detailsTextBox, editButton });
         }
 
         private void LoadShips()
@@ -54,9 +64,9 @@ namespace ShipsApp
                 string shipType = ship.GetType().Name;
                 string shipName = "";
                 
-                if (ship is Ship s)
+                if (ship is IVessel vessel)
                 {
-                    shipName = s.GetShipInfo().Split('\n')[0].Replace("Название: ", "");
+                    shipName = vessel.GetVesselInfo().Split('\n')[0].Replace("Название: ", "");
                 }
                 
                 shipsListBox.Items.Add($"{shipType}: {shipName}");
@@ -65,12 +75,28 @@ namespace ShipsApp
 
         private void ShipsListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            editButton.Enabled = shipsListBox.SelectedIndex != -1;
+            
             if (shipsListBox.SelectedIndex != -1)
             {
                 var selectedShip = ships[shipsListBox.SelectedIndex];
-                if (selectedShip is Ship ship)
+                if (selectedShip is IVessel vessel)
                 {
-                    detailsTextBox.Text = ship.GetShipInfo();
+                    detailsTextBox.Text = vessel.GetVesselInfo();
+                }
+            }
+        }
+
+        private void EditButton_Click(object sender, EventArgs e)
+        {
+            if (shipsListBox.SelectedIndex != -1)
+            {
+                var selectedShip = ships[shipsListBox.SelectedIndex];
+                var editForm = new EditShipForm(selectedShip);
+                if (editForm.ShowDialog() == DialogResult.OK)
+                {
+                    LoadShips();
+                    ShipsListBox_SelectedIndexChanged(null, EventArgs.Empty);
                 }
             }
         }

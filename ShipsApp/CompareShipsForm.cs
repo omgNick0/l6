@@ -74,7 +74,7 @@ namespace ShipsApp
                 string shipInfo = "";
                 if (ship is Ship s)
                 {
-                    shipInfo = $"{ship.GetType().Name}: {s.GetShipInfo().Split('\n')[0].Replace("Название: ", "")}";
+                    shipInfo = $"{ship.GetType().Name}: {((IVessel)s).GetVesselInfo().Split('\n')[0].Replace("Название: ", "")}";
                 }
                 
                 ship1ComboBox.Items.Add(shipInfo);
@@ -84,34 +84,30 @@ namespace ShipsApp
 
         private void CompareButton_Click(object sender, EventArgs e)
         {
-            if (ship1ComboBox.SelectedIndex == -1 || ship2ComboBox.SelectedIndex == -1)
+            if (ship1ComboBox.SelectedIndex != -1 && ship2ComboBox.SelectedIndex != -1)
             {
-                MessageBox.Show("Выберите два корабля для сравнения!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                var ship1 = ships[ship1ComboBox.SelectedIndex];
+                var ship2 = ships[ship2ComboBox.SelectedIndex];
 
-            var ship1 = ships[ship1ComboBox.SelectedIndex];
-            var ship2 = ships[ship2ComboBox.SelectedIndex];
+                if (ship1 != null && ship2 != null)
+                {
+                    string ship1Info = ((IVessel)ship1).GetVesselInfo();
+                    string ship2Info = ((IVessel)ship2).GetVesselInfo();
 
-            double length1 = ship1.GetLength();
-            double length2 = ship2.GetLength();
+                    var length1 = ship1.GetLength();
+                    var length2 = ship2.GetLength();
 
-            string result = $"Результат сравнения:\n\n";
-            if (length1 > length2)
-            {
-                result += "Первый корабль длиннее второго на " + (length1 - length2) + " метров";
-            }
-            else if (length2 > length1)
-            {
-                result += "Второй корабль длиннее первого на " + (length2 - length1) + " метров";
-            }
-            else
-            {
-                result += "Корабли имеют одинаковую длину";
-            }
+                    string comparison;
+                    if (length1 > length2)
+                        comparison = "больше";
+                    else if (length1 < length2)
+                        comparison = "меньше";
+                    else
+                        comparison = "равна";
 
-            resultTextBox.Text = result;
+                    resultTextBox.Text = $"Длина первого корабля ({length1} м) {comparison} длины второго корабля ({length2} м)";
+                }
+            }
         }
     }
 }
