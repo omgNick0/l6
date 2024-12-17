@@ -38,12 +38,39 @@ namespace ShipsApp
     public class Ship : ShipBase
     {
         public string Name { get; set; }
-        public int Crew { get; set; }
+        private int crew;
+        public int Crew 
+        { 
+            get => crew;
+            set
+            {
+                if (value >= Length)
+                {
+                    throw new ArgumentException($"Количество экипажа ({value} человек) не может быть больше или равно длине корабля ({Length} метров)");
+                }
+                int maxCrew = GetMaxCrewSize();
+                if (value > maxCrew)
+                {
+                    throw new ArgumentException($"Превышено максимальное количество экипажа ({maxCrew} человек) для корабля длиной {Length} метров");
+                }
+                crew = value;
+            }
+        }
+
+        protected virtual int GetMaxCrewSize()
+        {
+            int maxCrew;
+            if (Length < 50) maxCrew = 30;
+            else if (Length < 150) maxCrew = 100;
+            else maxCrew = 200;  // Максимальное значение для любого корабля
+
+            return maxCrew;
+        }
 
         public Ship(string name, double length, int crew) : base(length)
         {
             Name = name;
-            Crew = crew;
+            Crew = crew;  // Используем свойство для проверки ограничений
         }
 
         public override void DisplayInfo()
@@ -66,7 +93,30 @@ namespace ShipsApp
 
     public class Steamship : Ship, IPowered
     {
-        public int EnginePower { get; set; }
+        private int enginePower;
+        private const int MaxEnginePower = 100000;
+        public int EnginePower 
+        { 
+            get => enginePower;
+            set
+            {
+                int minPower = GetMinRequiredPower();
+                if (value < minPower)
+                {
+                    throw new ArgumentException($"Мощность двигателя должна быть не менее {minPower} л.с. (Формула: длина * экипаж = {Length} * {Crew})");
+                }
+                if (value > MaxEnginePower)
+                {
+                    throw new ArgumentException($"Мощность двигателя не может превышать {MaxEnginePower} л.с.");
+                }
+                enginePower = value;
+            }
+        }
+
+        protected virtual int GetMinRequiredPower()
+        {
+            return (int)(Length * Crew);
+        }
 
         public Steamship(string name, double length, int crew, int enginePower) 
             : base(name, length, crew)
@@ -84,7 +134,20 @@ namespace ShipsApp
 
     public class SailingShip : Ship, ISailable
     {
-        public int Sails { get; set; }
+        private int sails;
+        public int Sails 
+        { 
+            get => sails;
+            set
+            {
+                // Проверяем условие: количество_парусов^2 > количество_экипажа
+                if (value * value <= Crew)
+                {
+                    throw new ArgumentException($"Количество парусов в квадрате ({value}^2 = {value * value}) должно быть больше количества экипажа ({Crew})");
+                }
+                sails = value;
+            }
+        }
 
         public SailingShip(string name, double length, int crew, int sails) 
             : base(name, length, crew)
@@ -103,8 +166,45 @@ namespace ShipsApp
     public class Yacht : Ship, ISailable, IPowered
     {
         public int Sails { get; set; }
-        public int EnginePower { get; set; }
-        public string LuxuryLevel { get; set; }
+        private int enginePower;
+        private string luxuryLevel;
+        private const int MaxEnginePower = 100000;
+
+        public int EnginePower 
+        { 
+            get => enginePower;
+            set
+            {
+                int minPower = GetMinRequiredPower();
+                if (value < minPower)
+                {
+                    throw new ArgumentException($"Мощность двигателя должна быть не менее {minPower} л.с. (Формула: длина * экипаж + паруса = {Length} * {Crew} + {Sails})");
+                }
+                if (value > MaxEnginePower)
+                {
+                    throw new ArgumentException($"Мощность двигателя не может превышать {MaxEnginePower} л.с.");
+                }
+                enginePower = value;
+            }
+        }
+
+        public string LuxuryLevel 
+        { 
+            get => luxuryLevel;
+            set
+            {
+                if (!double.TryParse(value, out double level) || level < 1)
+                {
+                    throw new ArgumentException("Уровень роскоши должен быть числом не менее 1");
+                }
+                luxuryLevel = value;
+            }
+        }
+
+        protected virtual int GetMinRequiredPower()
+        {
+            return (int)(Length * Crew + Sails);
+        }
 
         public Yacht(string name, double length, int crew, int sails, int enginePower, string luxuryLevel) 
             : base(name, length, crew)
